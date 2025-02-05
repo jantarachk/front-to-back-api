@@ -59,3 +59,32 @@ app.use(express.json()) // reading JSON
 const PORT = 8000
 app.listen(PORT, ()=> console.log(`Server is running on Port ${PORT}`))
 ```
+
+##Step 5 - Create Routes and Controllers
+
+Authen router and controllers
+```js
+//auth-routes
+
+```
+
+##Step 6 - Create middlewares: errorHandler and notFoundHandler
+```js
+//Handle error middleware
+const handleError = (err,req,res,next) => {
+    res
+    .status(err.statusCode || 500)
+    .json({ message: err.message || "Internal Server Error" })
+}
+module.exports = handleError
+
+//Handle Not found middleware
+
+```
+and use in index.js
+```js
+const handleError = require("./Middlewares/errorHdl")
+
+app.use(handleError)
+
+```
