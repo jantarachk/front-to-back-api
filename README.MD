@@ -60,7 +60,7 @@ const PORT = 8000
 app.listen(PORT, ()=> console.log(`Server is running on Port ${PORT}`))
 ```
 
-##Step 5 - Create Routes and Controllers
+## Step 5 - Create Routes and Controllers
 
 Authen router and controllers
 ```js
@@ -68,7 +68,7 @@ Authen router and controllers
 
 ```
 
-##Step 6 - Create middlewares: errorHandler and notFoundHandler
+## Step 6 - Create middlewares: errorHandler and notFoundHandler
 ```js
 //Handle error middleware
 const handleError = (err,req,res,next) => {
@@ -86,5 +86,67 @@ and use in index.js
 const handleError = require("./Middlewares/errorHdl")
 
 app.use(handleError)
+
+```
+
+## Step 7 - Create utilities-createError
+```js
+const createError = (code,message) =>{
+    console.log("step1 - create error")
+    const error = new Error (message);
+    error.statusCode = code
+    throw error
+}
+
+
+module.exports = createError
+```
+
+and then imported to controllers
+
+## Step 8 - Create Middleware-Validator
+```js
+const { z } = require("zod")
+
+// Test Validator
+exports.registerSchema = z.object({
+    email: z.string().email("รู้จัก email รึป่าวจ้ะว่าต้องพิมพ์ยังไง"),
+    firstName: z.string().min(3,"Firstname ต้องมากกว่า 3 จ้ะ"),
+    lastName: z.string().min(3, "3 ตัวจ้ะ ต้องให้บอกหรอ"),
+    password: z.string().min(6, "6 ตัวจ้าาาาาาา"),
+    confirmPassword: z.string().min(6, "6 ตัวจ้ะ")
+}).refine((data)=> data.password === data.confirmPassword, {
+    message: "Password not match จ้าาา",
+    path: ["confirmPassword"]
+})
+
+exports.loginSchema = z.object({
+    email: z.string().email("รู้จัก email รึป่าวจ้ะว่าต้องพิมพ์ยังไง"),
+    password: z.string().min(6, "6 ตัวจ้าาาาาาา"),
+})
+
+
+exports.validateWithZod = (schema) => (req,res,next) =>{
+    try {
+        console.log("Hello Middleware")
+        schema.parse(req.body)
+        next()
+    } catch (error) {
+        const errMsg = error.errors.map( el => el.message )
+        const errTxt = errMsg.join(",")
+        const mergeError = new Error(errTxt)
+        next(mergeError)
+    }
+}
+```
+
+Don't forget to import to auth-route
+
+```js
+const { registerSchema, loginSchema, validateWithZod } = require("../Middlewares/validators")
+
+//@endpoint http://localhost:8000/api/register
+router.post("/register", validateWithZod(registerSchema), authController.register)
+router.post("/login", validateWithZod(loginSchema), authController.login)
 
 ```
