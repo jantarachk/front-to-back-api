@@ -1,6 +1,7 @@
 const createError = require("../Utilities/createError")
 const bcrypt = require("bcryptjs")
 const prisma = require("../Configs/prisma")
+const jwt = require("jsonwebtoken")
 
 exports.register = async (req,res,next) => {
     try {
@@ -59,9 +60,69 @@ exports.register = async (req,res,next) => {
 
 exports.login = async (req,res,next) => {
     try {
+        //Step 1- req.body
+        const { email, password } = req.body
+        // console.log(email, password)
+
+        //Step 2- check email and password
+        //เช็คอีเมลล์
+        const profile = await prisma.profile.findFirst({
+            where: {
+                email: email
+            }
+        })
+        console.log(profile)
+        if (!profile) {
+            return createError(400, "Email or Password is invalid")
+        }
+
+        //เช็คพาสเวิร์ด
+        const isMatch = bcrypt.compareSync(password, profile.password)
+        
+        if (!isMatch ) {
+            return createError(400, "Email or Password is invalid")
+        }
+
+
+        //Step 3- generate token
+        
+        const payload = {
+            id: profile.id,
+            email: profile.email,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            role: profile.role
+        }
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn : "1d"
+        })
+
+        console.log (payload)
+
+
+        //Step 4- response
+        res.json({
+            message: "Login Success",
+            payload: payload,
+            token: token
+        })
+
+        
         // console.log(aaa)
         res.json({ message: "Hello login"})
     } catch (error) {
         next(error)
+    }
+}
+
+
+
+exports.currentUser = async (req,res,next) =>{
+    // เอาไว้ให้หน้าบ้านมาเช็ค token กับหลังบ้านเวลาเปลี่ยนหน้าใน react
+    try {
+        res.json({ message: "Hello Current user"})
+    } catch (error) {
+        next (error)
     }
 }

@@ -8,6 +8,7 @@ const app = express()
 
 //import router
 const authRouter = require("./Routes/auth-routes")
+const userRouter = require("./Routes/user-routes")
 
 //middlewares
 app.use(cors()) // Allow cross domain connection
@@ -17,6 +18,7 @@ app.use(express.json()) // reading JSON
 
 //Routing
 app.use('/api', authRouter)
+app.use('/api', userRouter )
 
 
 //HandleError

@@ -7,5 +7,7 @@ const { registerSchema, loginSchema, validateWithZod } = require("../Middlewares
 router.post("/register", validateWithZod(registerSchema), authController.register)
 router.post("/login", validateWithZod(loginSchema), authController.login)
 
+router.get("/current-user", authController.currentUser)
+
 // export
 module.exports = router
